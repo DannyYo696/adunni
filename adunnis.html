@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adunni | Three Years of Love</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- Tailwind CSS for Utility Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cinzel (Luxury Serif) & Lato (Clean Sans) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+
+    <link rel="preload" as="image" href="https://raw.githubusercontent.com/DannyYo696/anniversary/91fc80a9440e4d9297a8662f29573506bcbdcea7/IMG_2532.webp" type="image/webp">
+
+
+    <!-- Custom Config for Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Lato', 'sans-serif'],
+                    },
+                    colors: {
+                        'love-black': '#0f0505', // Deep red-black
+                        'love-gold': '#d4af37',
+                        'love-cream': '#f5f5f0',
+                        'love-rose': '#8a1c1c',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f0505;
+            color: #f5f5f0;
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8a1c1c; 
+            border-radius: 4px;
+        }
+
+        .text-outline {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+            color: transparent;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { motion, useScroll, useTransform, AnimatePresence } = window.Motion;
+        const { useState, useEffect, useRef } = React;
+
+        // --- Custom Cursor Component ---
+        const CustomCursor = () => {
+            const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+            
+            useEffect(() => {
+                const updateMousePosition = (e) => {
+                    setMousePosition({ x: e.clientX, y: e.clientY });
+                };
+                window.addEventListener("mousemove", updateMousePosition);
+                return () => window.removeEventListener("mousemove", updateMousePosition);
+            }, []);
+
+            return (
+                <motion.div
+                    className="fixed top-0 left-0 w-8 h-8 border border-love-gold rounded-full pointer-events-none z-[9999] hidden md:block mix-blend-difference"
+                    animate={{ x: mousePosition.x - 16, y: mousePosition.y - 16 }}
+                    transition={{ type: "spring", stiffness: 150, damping: 15 }}
+                >
+                    <motion.div 
+                        className="w-1 h-1 bg-white rounded-full absolute top-1/2 left-1/2"
+                        animate={{ scale: [1, 4, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                    />
+                </motion.div>
+            );
+        };
+
+        // --- Preloader Component (Image + Circular Animation) ---
+const Preloader = ({ onComplete }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          setTimeout(onComplete, 500);
+          return 100;
+        }
+        return prev + 1;
+      });
+    }, 20);
+
+    return () => clearInterval(timer);
+  }, [onComplete]);
+
+  return (
+    <motion.div
+      initial={{ y: 0 }}
+      animate={{ y: progress === 100 ? "-100%" : 0 }}
+      transition={{ duration: 1.5, ease: "circIn" }}
+      className="fixed inset-0 bg-love-black z-[10000] flex flex-col items-center justify-center"
+    >
+      <div className="text-center">
+        {/* Image */}
+        <div className="w-40 md:w-56 mb-10 mx-auto rounded-full p-[2px] bg-love-gold">
+  <motion.img
+    src="https://raw.githubusercontent.com/DannyYo696/anniversary/91fc80a9440e4d9297a8662f29573506bcbdcea7/IMG_2532.webp"
+    alt="Adunni"
+    initial={{ opacity: 0, scale: 0.85 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 1 }}
+    className="w-full h-full rounded-full object-cover"
+  />
+</div>
+
+
+        {/* Progress Bar */}
+        <div className="w-64 h-[2px] bg-white/20 mx-auto overflow-hidden rounded-full">
+          <motion.div
+            animate={{ width: `${progress}%` }}
+            transition={{ ease: "linear", duration: 0.2 }}
+            className="h-full bg-love-gold"
+          />
+        </div>
+
+        {/* Text */}
+        <p className="font-sans text-xs tracking-[0.35em] text-white/60 mt-6 uppercase">
+          Loading Eternity
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
+
+        // --- Hero Section ---
+        const Hero = () => {
+    const { scrollY } = useScroll();
+    const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+    const y2 = useTransform(scrollY, [0, 500], [0, -150]);
+    const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+    return (
+        <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
+            {/* --- Background Video --- */}
+            <video
+                className="absolute inset-0 w-full h-full object-cover"
+                src="https://raw.githubusercontent.com/DannyYo696/anniversary/bd349ee86466ecfd9066ae61084e36515e44855c/IMG_7109.mov"
+                autoPlay
+                loop
+                muted
+                playsInline
+            />
+
+            {/* --- Overlay to Darken Video --- */}
+            <div className="absolute inset-0 bg-black/70"></div> 
+
+            {/* --- Parallax Gradient Shapes --- */}
+            <motion.div style={{ y: y1, opacity }} className="absolute top-1/4 left-1/4 w-24 h-24 bg-love-gold rounded-full blur-3xl opacity-20" />
+            <motion.div style={{ y: y2, opacity }} className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-love-rose rounded-full blur-3xl opacity-20" />
+
+            <div className="relative z-10 text-center px-4">
+                <motion.p 
+                    initial={{ opacity: 0, letterSpacing: "0.5em" }}
+                    animate={{ opacity: 1, letterSpacing: "0.2em" }}
+                    transition={{ duration: 1.5, delay: 1 }}
+                    className="font-sans text-love-gold text-sm md:text-base tracking-[0.5em] mb-4 uppercase"
+                >
+                    January 21, 2026
+                </motion.p>
+                
+                <motion.h1 
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 1.2, ease: [0.6, 0.01, -0.05, 0.95] }}
+                    className="font-serif text-6xl md:text-9xl mb-2 leading-tight"
+                >
+                    3 Years of
+                </motion.h1>
+                
+                <motion.h1 
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 1, delay: 1.4, ease: [0.6, 0.01, -0.05, 0.95] }}
+                    className="font-serif italic text-love-gold text-5xl md:text-8xl"
+                >
+                    Love
+                </motion.h1>
+
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 2 }}
+                    className="mt-12"
+                >
+                    <p className="font-sans text-gray-400 text-xs md:text-sm tracking-widest uppercase">Scroll to celebrate</p>
+                    <motion.div 
+                        animate={{ y: [0, 10, 0] }} 
+                        transition={{ repeat: Infinity, duration: 2 }}
+                        className="w-[1px] h-12 bg-love-gold mx-auto mt-4"
+                    />
+                </motion.div>
+            </div>
+        </section>
+    );
+};
+
+
+        // --- NEW: Infinite Marquee Section ---
+        const InfiniteMarquee = () => {
+            const words = ["FOREVER", "ADUNNI", "LOVE", "TOGETHER", "LAUGHTER", "GROWTH", "3 YEARS", "ETERNITY"];
+            
+            return (
+                <div className="py-10 bg-love-rose/10 overflow-hidden flex relative border-y border-love-gold/10">
+                    <motion.div 
+                        className="flex whitespace-nowrap"
+                        animate={{ x: [0, -1500] }}
+                        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                    >
+                        {[...words, ...words, ...words].map((word, i) => (
+                            <span key={i} className="font-serif text-4xl md:text-6xl text-love-gold/30 mx-8 font-bold">
+                                {word}
+                            </span>
+                        ))}
+                    </motion.div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0f0505] via-transparent to-[#0f0505] pointer-events-none" />
+                </div>
+            );
+        };
+
+        // --- The Story Section (Parallax Cards) ---
+        const StorySection = () => {
+            return (
+                <section className="py-32 px-6 md:px-20 max-w-7xl mx-auto">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.8 }}
+                        className="mb-20 border-l border-love-gold/30 pl-6 md:pl-10"
+                    >
+                        <h2 className="font-serif text-4xl md:text-6xl text-love-cream">The Journey</h2>
+                        <p className="font-sans text-gray-400 mt-4 max-w-md">
+                            Every moment with you has been a masterpiece. Here is how our story unfolded.
+                        </p>
+                    </motion.div>
+
+                    {/* Card 1 */}
+                    <div className="flex flex-col md:flex-row items-center justify-between mb-32 gap-10">
+                        <motion.div 
+                            className="md:w-1/2 relative"
+                            initial={{ x: -100, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                        >
+                            <div className="absolute -inset-4 bg-love-rose/20 blur-xl rounded-full" />
+                            <img 
+                                src="https://raw.githubusercontent.com/DannyYo696/anniversary/f8750caa40d1b1d6f50c302ade8dc54f5e1128a3/cee5cb0b-1d87-4a16-9e5f-e2a3ee4877d4.JPEG" 
+                                alt="Year 1" 
+                                className="relative w-full h-[500px] object-cover rounded-sm grayscale hover:grayscale-0 transition duration-700"
+                            />
+                        </motion.div>
+                        <motion.div 
+                            className="md:w-1/3"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3, duration: 1 }}
+                        >
+                            <span className="text-love-gold font-serif text-2xl italic">Chapter I</span>
+                            <h3 className="font-serif text-3xl mt-2 mb-4">The Spark</h3>
+                            <p className="font-sans text-gray-300 leading-relaxed">
+                                It started with a look that lasted a second but felt like a lifetime. We discovered a connection that was rare, electric, and undeniably real.
+                            </p>
+                        </motion.div>
+                    </div>
+
+                    {/* Card 2 (Reverse) */}
+                    <div className="flex flex-col md:flex-row-reverse items-center justify-between mb-32 gap-10">
+                        <motion.div 
+                            className="md:w-1/2 relative"
+                            initial={{ x: 100, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                        >
+                            <div className="absolute -inset-4 bg-love-gold/10 blur-xl rounded-full" />
+                            <img 
+                                src="https://raw.githubusercontent.com/DannyYo696/anniversary/f8750caa40d1b1d6f50c302ade8dc54f5e1128a3/20250404_180152.jpg" 
+                                alt="Year 2" 
+                                className="relative w-full h-[500px] object-cover rounded-sm grayscale hover:grayscale-0 transition duration-700"
+                            />
+                        </motion.div>
+                        <motion.div 
+                            className="md:w-1/3 md:text-right"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3, duration: 1 }}
+                        >
+                            <span className="text-love-gold font-serif text-2xl italic">Chapter II</span>
+                            <h3 className="font-serif text-3xl mt-2 mb-4">Growing Together</h3>
+                            <p className="font-sans text-gray-300 leading-relaxed">
+                                We built a world of our own. Through the highs and the lows, your hand in mine was the only constant I ever needed. We became partners in every sense.
+                            </p>
+                        </motion.div>
+                    </div>
+
+                    {/* Card 3 */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+                        <motion.div 
+                            className="md:w-1/2 relative"
+                            initial={{ x: -100, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                        >
+                            <div className="absolute -inset-4 bg-love-rose/20 blur-xl rounded-full" />
+                            <img 
+                                src="https://raw.githubusercontent.com/DannyYo696/anniversary/f8750caa40d1b1d6f50c302ade8dc54f5e1128a3/000A9882-2.jpeg" 
+                                alt="Year 3" 
+                                className="relative w-full h-[500px] object-cover rounded-sm grayscale hover:grayscale-0 transition duration-700"
+                            />
+                        </motion.div>
+                        <motion.div 
+                            className="md:w-1/3"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3, duration: 1 }}
+                        >
+                            <span className="text-love-gold font-serif text-2xl italic">Chapter III</span>
+                            <h3 className="font-serif text-3xl mt-2 mb-4">Forever Us</h3>
+                            <p className="font-sans text-gray-300 leading-relaxed">
+                                Today marks three years. But looking at you, I know this is just the beginning. You are my love, my life, and my forever.
+                            </p>
+                        </motion.div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- NEW: Reasons Grid (Why I Adore You) ---
+        const ReasonsSection = () => {
+            const reasons = [
+                { title: "Your Smile", desc: "It lights up my darkest days.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/977c6378d3daf4d691ceeb8de5633a54d19a8e3e/IMG_1827.JPEG" },
+                { title: "Your Heart", desc: "Kindness flows from you naturally.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/853d551beb9dccff5321b65444a58a21cd256ab1/IMG_20191025_132330_Original.jpeg" },
+                { title: "Our Laughs", desc: "No one makes me laugh like you do.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/8569e42a4d94689e4297d8582fbf5ae25c52251b/IMG_2804.jpeg" },
+                { title: "Your Strength", desc: "You inspire me to be better.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/8569e42a4d94689e4297d8582fbf5ae25c52251b/3439.jpeg" },
+                { title: "The Quiet Moments", desc: "Just sitting with you is enough.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/aab7b16325cddb924b2021dbf4a97d350257401a/IMG_4624.jpeg" },
+                { title: "Your Dreams", desc: "I love supporting your vision.", img: "https://raw.githubusercontent.com/DannyYo696/anniversary/d7f5cd29b6bf9ae9582b00cf0eed7e84178374fb/IMG_2692.jpeg" },
+            ];
+
+            return (
+                <section className="py-32 px-6 md:px-20 max-w-7xl mx-auto bg-love-black">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-20"
+                    >
+                        <h2 className="font-serif text-4xl md:text-6xl text-love-gold">Why I Adore You</h2>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {reasons.map((reason, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 50 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.8 }}
+                                whileHover={{ y: -10 }}
+                                className="group relative h-[400px] overflow-hidden rounded-lg cursor-pointer border border-white/5"
+                            >
+                                <img 
+                                    src={reason.img} 
+                                    alt={reason.title} 
+                                    className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-90" />
+                                
+                                <div className="absolute inset-0 flex flex-col justify-end p-8">
+                                    <motion.div
+                                        initial={{ x: -20 }}
+                                        whileHover={{ x: 0 }}
+                                        className="border-l-2 border-love-gold pl-4 transition-colors"
+                                    >
+                                        <h3 className="font-serif text-2xl text-white mb-2 group-hover:text-love-gold transition-colors">
+                                            {reason.title}
+                                        </h3>
+                                        <p className="font-sans text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            {reason.desc}
+                                        </p>
+                                    </motion.div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        // --- Horizontal Gallery ---
+        const Gallery = () => {
+  // Mix of images & videos
+  const items = [
+    { type: "image", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/a9b7dc4da888b4586b23e0ec192005f2c20b8cf8/5117.jpeg", caption: "Beautiful Memory" },
+    { type: "video", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/9161d641c44cae102845c7d33e54c2c053f6f3e1/4395.mp4", caption: "Our Laughs" },
+    { type: "image", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/b5afbc796638673b19ad804ce178e1921e06e4bf/5050.jpeg", caption: "Special Moment" },
+    { type: "video", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/705a8212a0fbaae88bcc9b51c0812363ca3b6a63/C31422FE-FC1A-472D-8101-E7CB487F2290.mp4", caption: "Forever Us" },
+    { type: "image", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/5022394c3c9b4e055bbef844072c64648fc8e016/182181.jpeg", caption: "Unforgettable" },
+    { type: "image", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/f1c3b31ba3a928cbf5813b5bff78e83681bede90/IMG_0982.jpeg", caption: "Smiles" },
+    { type: "image", src: "https://raw.githubusercontent.com/DannyYo696/anniversary/2bd772813ebd862bbbc21cd09b7f9c10fe47854b/IMG_8312.jpeg", caption: "Smiles" },
+  ];
+
+  return (
+    <section className="py-20 bg-love-black border-y border-white/5">
+      <div className="mb-10 px-6 md:px-20">
+        <h2 className="font-serif text-3xl md:text-5xl text-center text-love-cream">Beautiful Moments</h2>
+      </div>
+
+      <div className="flex overflow-x-auto gap-6 px-6 md:px-20 pb-10 hide-scrollbar snap-x snap-mandatory">
+        {items.map((item, index) => (
+          <motion.div
+            key={index}
+            className="min-w-[85vw] md:min-w-[400px] h-[500px] relative snap-center group overflow-hidden rounded-sm"
+            whileHover={{ scale: 0.98 }}
+          >
+            {item.type === "image" ? (
+              <img
+                src={item.src}
+                alt={item.caption}
+                className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+              />
+            ) : (
+              <video
+                src={item.src}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
+              />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition duration-500 flex items-end p-8">
+              <p className="font-serif text-xl italic text-love-gold">{item.caption}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+        // --- NEW: The Promise (Cinematic Sticky Scroll) ---
+        const PromiseSection = () => {
+            const { scrollYProgress } = useScroll();
+            const scale = useTransform(scrollYProgress, [0.2, 0.4], [1, 1.5]); // Zoom effect
+            const opacity1 = useTransform(scrollYProgress, [0.2, 0.3], [1, 0]);
+            const opacity2 = useTransform(scrollYProgress, [0.3, 0.4], [0, 1]);
+            const opacity3 = useTransform(scrollYProgress, [0.4, 0.5], [0, 1]);
+
+            return (
+                <div className="relative h-[300vh]">
+                    <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center">
+                        {/* Background Layers */}
+                        <motion.img 
+                            src="https://picsum.photos/seed/promise1/1920/1080" 
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ scale, opacity: opacity1 }}
+                        />
+                        <motion.img 
+                            src="https://picsum.photos/seed/promise2/1920/1080" 
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ scale, opacity: opacity2 }}
+                        />
+                        <motion.img 
+                            src="https://picsum.photos/seed/promise3/1920/1080" 
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ scale, opacity: opacity3 }}
+                        />
+                        
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10" />
+
+                        <motion.div 
+                            className="relative z-20 text-center px-4"
+                            style={{ scale: useTransform(scrollYProgress, [0.2, 0.5], [1, 1.2]) }}
+                        >
+                            <motion.h2 
+                                className="font-serif text-6xl md:text-9xl text-white mb-4 tracking-tighter"
+                                initial={{ opacity: 0, y: 50 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                            >
+                                I PROMISE
+                            </motion.h2>
+                            <motion.p 
+                                className="font-sans text-love-gold text-xl md:text-2xl tracking-[0.5em] uppercase"
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                transition={{ delay: 0.5 }}
+                            >
+                                To love you forever
+                            </motion.p>
+                        </motion.div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Updated Letter Section with Celebration Popup ---
+        const Letter = () => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            return (
+                <section className="min-h-screen flex items-center justify-center px-4 relative">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+                    
+                    <motion.div 
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                        className="bg-love-black border border-love-gold/30 p-8 md:p-16 max-w-4xl relative shadow-2xl z-10"
+                    >
+                        {/* Decorative Corners */}
+                        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-love-gold" />
+                        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-love-gold" />
+                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-love-gold" />
+                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-love-gold" />
+
+                        <h2 className="font-serif text-4xl md:text-6xl text-center mb-12 text-love-cream">To My Adunni</h2>
+                        
+                        <div className="font-serif text-xl md:text-2xl leading-relaxed text-gray-300 text-center space-y-8">
+                            <p>
+                                They say time flies when you're having fun, but with you, time seems to stand still and speed up all at once.
+                            </p>
+                            <p>
+                                In three years, you have taught me the true meaning of patience, kindness, and unconditional love. Your smile is my sunrise, and your laughter is the rhythm of my life.
+                            </p>
+                            <p className="text-love-gold font-bold text-3xl italic mt-12">
+                                You are the love of my life.
+                            </p>
+                        </div>
+
+                        <div className="text-center mt-16">
+                            <motion.button 
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsOpen(true)}
+                                className="font-sans text-xs tracking-[0.2em] border border-love-gold px-8 py-4 text-love-gold transition duration-300 relative overflow-hidden group"
+                            >
+                                <span className="relative z-10">FOREVER YOURS</span>
+                                <div className="absolute inset-0 bg-love-gold transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 ease-out z-0" />
+                                <span className="absolute inset-0 z-10 text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-bold">CLICK ME</span>
+                            </motion.button>
+                        </div>
+                    </motion.div>
+
+                    {/* --- CELEBRATION POPUP OVERLAY --- */}
+                    <AnimatePresence>
+                        {isOpen && (
+                            <>
+                                {/* Backdrop */}
+                                <motion.div 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setIsOpen(false)}
+                                    className="fixed inset-0 bg-black/90 backdrop-blur-md z-[9999] flex items-center justify-center"
+                                >
+                                    {/* Popup Card */}
+                                    <motion.div 
+                                        initial={{ scale: 0.5, opacity: 0, rotate: -5 }}
+                                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                        exit={{ scale: 0.8, opacity: 0, rotate: 5 }}
+                                        transition={{ type: "spring", damping: 15, stiffness: 200 }}
+                                        className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0f0505] border-2 border-love-gold p-10 md:p-20 max-w-2xl text-center rounded-lg shadow-[0_0_50px_rgba(212,175,55,0.3)] overflow-hidden"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {/* Floating Hearts Background inside Popup */}
+                                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                                            {[...Array(15)].map((_, i) => (
+                                                <motion.div
+                                                    key={i}
+                                                    className="absolute text-love-rose/20 text-4xl"
+                                                    initial={{ 
+                                                        y: "100%", 
+                                                        x: `${Math.random() * 100}%`,
+                                                        scale: Math.random(),
+                                                        rotate: Math.random() * 360
+                                                    }}
+                                                    animate={{ 
+                                                        y: "-20%",
+                                                        opacity: [0, 1, 0],
+                                                        rotate: Math.random() * 360 + 360
+                                                    }}
+                                                    transition={{ 
+                                                        duration: 3 + Math.random() * 2, 
+                                                        repeat: Infinity, 
+                                                        delay: Math.random() * 2,
+                                                        ease: "linear"
+                                                    }}
+                                                >
+                                                    ❤
+                                                </motion.div>
+                                            ))}
+                                        </div>
+
+                                        {/* Content */}
+                                        <motion.div
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            transition={{ delay: 0.3, duration: 0.8 }}
+                                        >
+                                            <div className="text-6xl mb-6 animate-pulse text-love-rose">🥂</div>
+                                            <h2 className="font-serif text-4xl md:text-6xl text-love-cream mb-4 leading-tight">
+                                                Here's to<br/>
+                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-love-gold to-yellow-200 italic">Many More Years</span>
+                                            </h2>
+                                            <p className="font-sans text-gray-400 mt-6 tracking-widest uppercase text-sm">
+                                                Together, forever.
+                                            </p>
+                                            
+                                            <motion.button
+                                                whileHover={{ scale: 1.1 }}
+                                                onClick={() => setIsOpen(false)}
+                                                className="mt-10 text-love-gold border-b border-love-gold/50 pb-1 hover:text-white hover:border-white transition-colors"
+                                            >
+                                                Close with Love
+                                            </motion.button>
+                                        </motion.div>
+                                    </motion.div>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </section>
+            );
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            const [loaded, setLoaded] = useState(false);
+
+            return (
+                <div className="antialiased selection:bg-love-rose selection:text-white">
+                    <CustomCursor />
+                    <AnimatePresence>
+                        {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
+                    </AnimatePresence>
+
+                    <motion.main
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: loaded ? 1 : 0 }}
+                        transition={{ duration: 1 }}
+                    >
+                        <Hero />
+                        <InfiniteMarquee /> {/* NEW */}
+                        <StorySection />
+                        <ReasonsSection /> {/* NEW */}
+                        <Gallery />
+                        <PromiseSection /> {/* NEW */}
+                        <Letter />
+                        
+                        <footer className="py-12 text-center bg-black">
+                            <p className="font-serif text-love-gold text-2xl mb-2">From Adedayo to Adunni</p>
+                            
+                        </footer>
+                    </motion.main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
